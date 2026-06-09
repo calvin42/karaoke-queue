@@ -1,0 +1,282 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-bg: #faf8f3;
+    --color-surface: #fff;
+    --color-text: #1a1a1a;
+    --color-text-muted: #666;
+    --color-border: #e0d7d0;
+    --color-accent: #0d9488;
+    --color-accent-light: #d1faf5;
+    --color-accent-badge: #f59e0b;
+    --color-done: rgba(26, 26, 26, 0.5);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.dark-mode {
+    --color-bg: #1a1a1a;
+    --color-surface: #2a2a2a;
+    --color-text: #f5f5f5;
+    --color-text-muted: #999;
+    --color-border: #3a3a3a;
+    --color-done: rgba(245, 245, 245, 0.3);
+}
+
+body {
+    font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
+}
+
+#app {
+    max-width: 375px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--color-border);
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.2s;
+}
+
+.theme-toggle:hover {
+    background-color: var(--color-accent-light);
+}
+
+/* Form */
+.form-container {
+    padding: 1.5rem 1rem;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+}
+
+#queueForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#queueForm input {
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    transition: border-color 0.2s;
+}
+
+#queueForm input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+#queueForm button {
+    padding: 0.75rem;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#queueForm button:hover {
+    background-color: #0f766e;
+}
+
+#queueForm button:active {
+    opacity: 0.9;
+}
+
+/* Queue Container */
+.queue-container {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--color-text-muted);
+}
+
+.queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Queue Card */
+.queue-card {
+    padding: 1rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+}
+
+.queue-card.singing {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-accent);
+    background: linear-gradient(135deg, var(--color-surface) 0%, rgba(13, 148, 136, 0.05) 100%);
+}
+
+.queue-card.done {
+    opacity: 0.5;
+    background-color: var(--color-done);
+}
+
+.queue-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+.queue-card-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge.singing {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.badge.next {
+    background-color: var(--color-accent-badge);
+    color: white;
+}
+
+.queue-card-song {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+.queue-card-footer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.queue-card-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+button.btn-next {
+    flex: 1;
+    padding: 0.5rem;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+button.btn-next:hover {
+    background-color: #0f766e;
+}
+
+.drag-handle {
+    cursor: grab;
+    padding: 0.5rem;
+    color: var(--color-text-muted);
+    font-size: 1.2rem;
+    transition: color 0.2s;
+}
+
+.drag-handle:hover {
+    color: var(--color-accent);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.queue-card.dragging {
+    opacity: 0.6;
+    transform: scale(0.98);
+}
+
+.queue-card.drag-over {
+    border-color: var(--color-accent);
+    background-color: rgba(13, 148, 136, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 375px) {
+    #app {
+        max-width: 100%;
+    }
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.queue-card {
+    animation: slideIn 0.3s ease;
+}
