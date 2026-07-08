@@ -156,6 +156,9 @@ body {
     transition: all 0.2s;
 }
 
+.queue-card.waiting {
+}
+
 .queue-card.singing {
     box-shadow: var(--shadow-lg);
     border-color: var(--color-accent);
@@ -213,6 +216,7 @@ body {
 .queue-card-controls {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 button.btn-next {
@@ -232,30 +236,26 @@ button.btn-next:hover {
     background-color: #0f766e;
 }
 
-.drag-handle {
-    cursor: grab;
+.position-input {
+    width: 60px;
     padding: 0.5rem;
-    color: var(--color-text-muted);
-    font-size: 1.2rem;
-    transition: color 0.2s;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background-color: var(--color-surface);
+    color: var(--color-text);
 }
 
-.drag-handle:hover {
-    color: var(--color-accent);
-}
-
-.drag-handle:active {
-    cursor: grabbing;
-}
-
-.queue-card.dragging {
-    opacity: 0.6;
-    transform: scale(0.98);
-}
-
-.queue-card.drag-over {
+.position-input:focus {
+    outline: none;
     border-color: var(--color-accent);
-    background-color: rgba(13, 148, 136, 0.1);
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.1);
+}
+
+.queue-card-controls label {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
 }
 
 /* Responsive */

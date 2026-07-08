@@ -3,12 +3,9 @@ class KaraokeQueue {
         this.queue = [];
         this.userNames = new Set();
         this.darkMode = false;
-        this.draggedElement = null;
-        this.draggedId = null;
         this.ws = null;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
-        this.notifiedUpNextId = null; // Track who we've notified
         this.showDone = false; // Track if done section is expanded
 
         this.initializeElements();
@@ -32,9 +29,6 @@ class KaraokeQueue {
 
     async handleAddEntry(e) {
         e.preventDefault();
-
-        // Request notification permission on first user action
-        await this.requestNotificationPermission();
 
         const singer = this.singerInput.value.trim();
         const song = this.songInput.value.trim();
@@ -104,20 +98,6 @@ class KaraokeQueue {
 
     handleQueueUpdate(queueData) {
         this.queue = queueData;
-
-        // Find the first waiting entry (up next)
-        const upNext = this.queue.find(e => e.status === 'waiting');
-        
-        // Notify if the up-next person changed and is a registered user
-        if (upNext && upNext.id !== this.notifiedUpNextId) {
-            if (this.userNames.has(upNext.singer)) {
-                this.sendNotification(
-                    `🎤 You're up next! Get ready to sing: ${upNext.song}`
-                );
-            }
-            this.notifiedUpNextId = upNext.id;
-        }
-
         this.renderQueue();
     }
 
@@ -175,9 +155,6 @@ class KaraokeQueue {
             
             this.queueList.appendChild(doneSection);
         }
-
-        // Re-enable drag and drop
-        this.attachDragListeners();
     }
 
     createCard(entry, status, showNext, isUpNext) {
@@ -201,9 +178,12 @@ class KaraokeQueue {
                 </div>
             `;
         } else if (status === 'waiting') {
+            const waitingItems = this.queue.filter(e => e.status === 'waiting');
+            const currentPosition = waitingItems.findIndex(e => e.id === entry.id);
             controlsHTML = `
                 <div class="queue-card-controls">
-                    <span class="drag-handle">↕</span>
+                    <label>Position:</label>
+                    <input type="number" min="1" max="${waitingItems.length}" value="${currentPosition + 1}" class="position-input" data-id="${entry.id}">
                 </div>
             `;
         }
@@ -225,6 +205,12 @@ class KaraokeQueue {
             nextBtn.addEventListener('click', () => this.handleNext());
         }
 
+        // Attach position input listener
+        const positionInput = card.querySelector('.position-input');
+        if (positionInput) {
+            positionInput.addEventListener('change', (e) => this.handlePositionChange(e));
+        }
+
         return card;
     }
 
@@ -239,103 +225,35 @@ class KaraokeQueue {
         }
     }
 
-    attachDragListeners() {
-        const waitingCards = this.queueList.querySelectorAll('.queue-card.waiting');
+    async handlePositionChange(e) {
+        const input = e.target;
+        const entryId = parseInt(input.dataset.id);
+        const newPosition = parseInt(input.value) - 1; // Convert to 0-based index
 
-        waitingCards.forEach(card => {
-            card.addEventListener('dragstart', (e) => this.handleDragStart(e, card));
-            card.addEventListener('dragend', (e) => this.handleDragEnd(e));
-            card.addEventListener('dragover', (e) => this.handleDragOver(e));
-            card.addEventListener('drop', (e) => this.handleDrop(e, card));
-            card.addEventListener('dragleave', (e) => this.handleDragLeave(e));
-        });
-    }
-
-    handleDragStart(e, card) {
-        this.draggedElement = card;
-        this.draggedId = parseInt(card.dataset.id);
-        card.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-    }
-
-    handleDragEnd(e) {
-        if (this.draggedElement) {
-            this.draggedElement.classList.remove('dragging');
-        }
-        this.queueList.querySelectorAll('.queue-card.waiting').forEach(card => {
-            card.classList.remove('drag-over');
-        });
-        this.draggedElement = null;
-        this.draggedId = null;
-    }
-
-    handleDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        if (e.target.closest('.queue-card.waiting') && e.target.closest('.queue-card.waiting') !== this.draggedElement) {
-            e.target.closest('.queue-card.waiting').classList.add('drag-over');
-        }
-    }
-
-    handleDragLeave(e) {
-        const card = e.target.closest('.queue-card.waiting');
-        if (card) {
-            card.classList.remove('drag-over');
-        }
-    }
-
-    async handleDrop(e, targetCard) {
-        e.preventDefault();
-        targetCard.classList.remove('drag-over');
-
-        if (!this.draggedElement || this.draggedElement === targetCard) return;
-
+        // Validate position
         const waiting = this.queue.filter(e => e.status === 'waiting');
-        const draggedIndex = waiting.findIndex(e => e.id === this.draggedId);
-        const targetIndex = waiting.findIndex(e => e.id === parseInt(targetCard.dataset.id));
-
-        if (draggedIndex === -1 || targetIndex === -1) return;
-
-        const newPosition = targetIndex;
+        if (newPosition < 0 || newPosition >= waiting.length) {
+            input.value = (waiting.findIndex(e => e.id === entryId) + 1);
+            return;
+        }
 
         try {
-            const response = await fetch(`/queue/${this.draggedId}/move?new_position=${newPosition}`, {
+            const response = await fetch(`/queue/${entryId}/move?new_position=${newPosition}`, {
                 method: 'PATCH'
             });
 
             if (!response.ok) {
                 console.error('Error moving entry');
+                // Revert to original position on error
+                input.value = (waiting.findIndex(e => e.id === entryId) + 1);
             }
         } catch (error) {
             console.error('Error:', error);
+            // Revert to original position on error
+            input.value = (waiting.findIndex(e => e.id === entryId) + 1);
         }
     }
 
-    async requestNotificationPermission() {
-        if ('Notification' in window) {
-            if (Notification.permission === 'default') {
-                try {
-                    const permission = await Notification.requestPermission();
-                    console.log('Notification permission:', permission);
-                } catch (error) {
-                    console.error('Error requesting notification permission:', error);
-                }
-            } else {
-                console.log('Notification permission already set to:', Notification.permission);
-            }
-        } else {
-            console.log('Notifications not supported in this browser');
-        }
-    }
-
-    sendNotification(message) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('🎤 Karaoke Queue', {
-                body: message,
-                icon: '🎤'
-            });
-        }
-    }
 
     escapeHtml(text) {
         const div = document.createElement('div');

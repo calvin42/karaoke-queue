@@ -11,35 +11,11 @@ A full-stack real-time karaoke queue web app for smartphone use.
 ## Features
 
 - Real-time queue updates via WebSocket
-- Drag-and-drop reordering (for waiting entries)
+- Position number input for reordering queue entries
 - Dark/light mode toggle
-- Web Notifications API integration
 - Mobile-first responsive design (375px)
 - Auto-reconnect WebSocket on disconnect
 
-## Project Structure
-
-```
-karaoke-queue/
-├── backend/
-│   ├── main.py           # FastAPI app entry point
-│   ├── models.py         # SQLAlchemy models
-│   ├── database.py       # Database initialization
-│   ├── schemas.py        # Pydantic schemas
-│   ├── routers/
-│   │   ├── queue.py      # Queue HTTP endpoints
-│   │   └── ws.py         # WebSocket endpoint
-│   ├── services/
-│   │   └── queue_service.py  # Business logic
-│   └── tests/
-│       └── test_queue.py # Test suite
-├── frontend/
-│   ├── index.html        # Main HTML
-│   ├── style.css         # Styles
-│   └── app.js            # Client JS
-├── requirements.txt      # Python dependencies
-└── Dockerfile           # Container configuration
-```
 
 ## Installation
 
@@ -80,20 +56,3 @@ pytest backend/tests/test_queue.py -v
 3. Add Persistent Disk at `/data`
 4. Set environment variable: `DATABASE_URL=sqlite+aiosqlite:////data/karaoke.db`
 
-## Data Model
-
-**Table: queue**
-- `id` (int, primary key)
-- `singer` (str)
-- `song` (str)
-- `status` (enum: waiting/singing/done)
-- `position` (int)
-- `created_at` (datetime)
-
-## Rules
-
-- Only one `singing` entry at a time
-- `done` entries are immutable
-- `singing` entries cannot be reordered
-- First entry auto-promotes to `singing` if no current singer
-- All DB mutations broadcast full queue to WebSocket clients
