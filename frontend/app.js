@@ -167,14 +167,14 @@ class KaraokeQueue {
         if (status === 'singing') {
             badgeHTML = '<span class="badge singing">NOW SINGING</span>';
         } else if (isUpNext) {
-            badgeHTML = '<span class="badge next">UP NEXT</span>';
+            badgeHTML = '<span class="badge next">Prossimo</span>';
         }
 
         let controlsHTML = '';
         if (status === 'singing' && showNext) {
             controlsHTML = `
                 <div class="queue-card-controls">
-                    <button class="btn-next" data-id="${entry.id}">Next ▶</button>
+                    <button class="btn-next" data-id="${entry.id}">Fatto ▶</button>
                 </div>
             `;
         } else if (status === 'waiting') {
